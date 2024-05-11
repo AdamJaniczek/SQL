@@ -1,4 +1,5 @@
 CREATE DATABASE demo_employees COLLATE utf8mb4_polish_ci;
+USE demo_employees;
 
 # 1. Tworzy tabelę pracownik(imie, nazwisko, wyplata, data urodzenia, stanowisko). W tabeli mogą być dodatkowe kolumny, które uznasz za niezbędne.
 USE demo_employees;
@@ -42,7 +43,7 @@ SELECT * FROM employees where job_title = 1;
 
 #5. Pobiera pracowników, którzy mają co najmniej 30 lat
 SELECT * FROM employees
-WHERE TIMESTAMPDIFF(YEAR, birth_date, CURDATE()) >= 30
+WHERE TIMESTAMPDIFF(YEAR, birth_date, CURDATE()) >= 30;
 
 #6. Zwiększa wypłatę pracowników na wybranym stanowisku o 10%
 UPDATE employees SET salary = salary * 1.10
@@ -77,9 +78,9 @@ CREATE TABLE address (
     id int primary key not null auto_increment,
     street varchar(30) null,
     house_no varchar(5) null,
-    apartment_no varchar(5) not null,
+    apartment_no varchar(5) null,
     zip_code varchar(6) null,
-    city varchar(20)
+    city varchar(20) not null
 );
 
 #11. Tworzy tabelę pracownik (imię, nazwisko) + relacje do tabeli stanowisko i adres
@@ -88,15 +89,38 @@ CREATE TABLE employees (
     name varchar(30) not null,
     last_name varchar(50) not null,
     job_title int not null,
-    address int not null,
+    address int null,
     FOREIGN KEY (job_title) REFERENCES job_title(id),
     FOREIGN KEY (address) REFERENCES address(id)
 );
 
 #12. Dodaje dane testowe (w taki sposób, aby powstały pomiędzy nimi sensowne powiązania)
+INSERT INTO address (id, street, house_no, apartment_no, zip_code, city)
+VALUES
+    (1, 'Wietrzna', '10B', '7', '53300', 'Wrocław'),
+    (2, 'Paprotna', '2', null, '53300', 'Wrocław'),
+    (3, 'Sejmowa', '19', '1C', '00980', 'Warszawa'),
+    (4, 'Poznańska', '95', '12D', '23670', 'Poznań'),
+    (5, 'Miodowa', '7', null, '39000', 'Inowrocław');
+
+INSERT INTO employees (name, last_name, job_title, address)
+VALUES
+    ('Jan', 'Kowalski', 1, 1),
+    ('Beata', 'Czyk', 3, 2),
+    ('Tomasz', 'Abacki', 2, 3),
+    ('Donald', 'Nowak', 1, 4),
+    ('Piotr', 'Wiśnia', 2, 5);
 
 #13. Pobiera pełne informacje o pracowniku (imię, nazwisko, adres, stanowisko)
+SELECT e.name, e.last_name, j.name, j.salary FROM employees AS e
+INNER JOIN job_title AS j on e.job_title = j.id
+ORDER BY e.last_name ASC;
 
 #14. Oblicza sumę wypłat dla wszystkich pracowników w firmie
+SELECT SUM(j.salary) as 'total salary'  FROM employees AS e
+INNER JOIN job_title AS j on e.job_title = j.id;
 
 #15. Pobiera pracowników mieszkających w lokalizacji z kodem pocztowym 90210 (albo innym, który będzie miał sens dla Twoich danych testowych)
+SELECT e.name, e.last_name, a.street, a.house_no, a.apartment_no, a.zip_code, a.city FROM employees AS e
+INNER JOIN address AS a on e.address = a.id
+WHERE a.zip_code = '53300';
