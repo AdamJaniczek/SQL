@@ -19,10 +19,10 @@ CREATE TABLE employees (
     id int primary key not null auto_increment,
     name varchar(30) not null,
     lastName varchar(50) not null,
-    salary int not null,
+    salary decimal(10,2) not null,
     birth_date date not null,
-    job_title int not null,
-    FOREIGN KEY (job_title) REFERENCES job_title(id)
+    job_title_id int not null,
+    FOREIGN KEY (job_title_id) REFERENCES job_title(id)
 );
 
 #2. Wstawia do tabeli co najmniej 6 pracowników
@@ -39,7 +39,7 @@ INSERT INTO employees (name, lastName, salary, birth_date, job_title)
 SELECT * FROM employees ORDER BY lastName ASC;
 
 #4. Pobiera pracowników na wybranym stanowisku
-SELECT * FROM employees where job_title = 1;
+SELECT * FROM employees where job_title_id = 1;
 
 #5. Pobiera pracowników, którzy mają co najmniej 30 lat
 SELECT * FROM employees
@@ -47,7 +47,7 @@ WHERE TIMESTAMPDIFF(YEAR, birth_date, CURDATE()) >= 30;
 
 #6. Zwiększa wypłatę pracowników na wybranym stanowisku o 10%
 UPDATE employees SET salary = salary * 1.10
-WHERE  job_title = 1;
+WHERE  job_title_id = 1;
 
 #7. Pobiera najmłodszego pracowników (uwzględnij przypadek, że może być kilku urodzonych tego samego dnia)
 SELECT * FROM employees
@@ -63,15 +63,15 @@ DROP TABLE job_title;
 CREATE TABLE job_title (
     id int primary key not null auto_increment,
     name varchar(20) unique not null,
-    salary int not null,
+    salary decimal(10,2) not null,
     description varchar(500) null
 );
 
 INSERT INTO job_title (name, salary)
 VALUES
-    ('IT', 10000),
-    ('HR', 8500),
-    ('Logistics', 9250);
+    ('IT', 10000.00),
+    ('HR', 8500.00),
+    ('Logistics', 9250.00);
 
 #10. Tworzy tabelę adres (ulica+numer domu/mieszkania, kod pocztowy, miejscowość)
 CREATE TABLE address (
@@ -88,10 +88,10 @@ CREATE TABLE employees (
     id int primary key not null auto_increment,
     name varchar(30) not null,
     last_name varchar(50) not null,
-    job_title int not null,
-    address int null,
-    FOREIGN KEY (job_title) REFERENCES job_title(id),
-    FOREIGN KEY (address) REFERENCES address(id)
+    job_title_id int not null,
+    address_id int null,
+    FOREIGN KEY (job_title_id) REFERENCES job_title(id),
+    FOREIGN KEY (address_id) REFERENCES address(id)
 );
 
 #12. Dodaje dane testowe (w taki sposób, aby powstały pomiędzy nimi sensowne powiązania)
@@ -103,7 +103,7 @@ VALUES
     (4, 'Poznańska', '95', '12D', '23670', 'Poznań'),
     (5, 'Miodowa', '7', null, '39000', 'Inowrocław');
 
-INSERT INTO employees (name, last_name, job_title, address)
+INSERT INTO employees (name, last_name, job_title_id, address_id)
 VALUES
     ('Jan', 'Kowalski', 1, 1),
     ('Beata', 'Czyk', 3, 2),
@@ -112,15 +112,16 @@ VALUES
     ('Piotr', 'Wiśnia', 2, 5);
 
 #13. Pobiera pełne informacje o pracowniku (imię, nazwisko, adres, stanowisko)
-SELECT e.name, e.last_name, j.name, j.salary FROM employees AS e
-INNER JOIN job_title AS j on e.job_title = j.id
+SELECT e.name, e.last_name, j.name, j.salary, a.street, a.house_no, a.apartment_no, a.zip_code, a.city FROM employees AS e
+INNER JOIN job_title AS j on e.job_title_id = j.id
+INNER JOIN address AS a on e.address_id = a.id
 ORDER BY e.last_name ASC;
 
 #14. Oblicza sumę wypłat dla wszystkich pracowników w firmie
 SELECT SUM(j.salary) as 'total salary'  FROM employees AS e
-INNER JOIN job_title AS j on e.job_title = j.id;
+INNER JOIN job_title AS j on e.job_title_id = j.id;
 
 #15. Pobiera pracowników mieszkających w lokalizacji z kodem pocztowym 90210 (albo innym, który będzie miał sens dla Twoich danych testowych)
 SELECT e.name, e.last_name, a.street, a.house_no, a.apartment_no, a.zip_code, a.city FROM employees AS e
-INNER JOIN address AS a on e.address = a.id
+INNER JOIN address AS a on e.address_id = a.id
 WHERE a.zip_code = '53300';
